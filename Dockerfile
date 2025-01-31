@@ -20,4 +20,4 @@ COPY . .
 EXPOSE 3000
 
 # Wait for 20 seconds and then start the application
-CMD ["sh", "-c", "sleep 20 && node server/server.js"]
+CMD ["sh", "-c", "sleep 10 && node server/server.js"]

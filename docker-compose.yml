@@ -22,14 +22,14 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: YouWillNotGuessThis
       MYSQL_DATABASE: db
-      MYSQL_USER=sqluser
-      MYSQL_PASSWORD=password
+      MYSQL_USER: sqluser
+      MYSQL_PASSWORD: password
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-      - ./my.cnf:/etc/my.cnf
+      - ./my.cnf:/etc/my.cnf  # Mount the custom my.cnf here
     networks:
       - app-network
 

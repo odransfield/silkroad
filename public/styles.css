@@ -38,7 +38,7 @@ form {
 form input {
     padding: 10px 20px; /* Increase padding to make the input larger */
     font-size: 18px; /* Increase font size */
-    width: 300px; /* Set a fixed width or adjust based on your needs */
+    width: 150px; /* Set a fixed width or adjust based on your needs */
     margin-right: 10px; /* Space between the input and the button */
 }
 
