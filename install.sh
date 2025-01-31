@@ -37,6 +37,12 @@ sudo mysql -u root -p -e "
         ('Funny Powder', '22.05', 'img/coke.jpg'),
         ('Giga Powder', '8.99', 'img/coke.jpg');
     "
+
+sudo mysql -u sqluser -p password -e "
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'YouWillNotGuessThis';
+FLUSH PRIVILEGES;
+"
+
 # Install Git
 git clone https://github.com/23younesm/silkroad.git
 
