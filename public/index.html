@@ -60,7 +60,7 @@
             <h2>Product Listings</h2>
             <script>
                 document.addEventListener("DOMContentLoaded", function() {
-                    fetch("http://localhost:3000/products")
+                    fetch("http://10.1.2.10:3000/products")
                         .then(response => response.json())
                         .then(data => {
                             const productsContainer = document.getElementById("products");
