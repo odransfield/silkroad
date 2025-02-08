@@ -31,9 +31,9 @@ app.use(session({
 const upload = multer({ dest: "./server/uploads/" });
 
 const db = mysql.createConnection({
-    host: process.env.DB_HOST || "db", // Use "db" since it's the service name in docker-compose
+    host: process.env.DB_HOST || "localhost", // Use "db" since it's the service name in docker-compose
     user: process.env.DB_USER || "sqluser",
-    password: process.env.DB_PASSWORD || "password",
+    password: process.env.DB_PASSWORD || "Passw0rd123!",
     database: process.env.DB_NAME || "db"
 });
 
