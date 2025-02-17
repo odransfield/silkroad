@@ -4,8 +4,7 @@
   "description": "Vulnerable Silk Road Marketplace for Red vs Blue exercise",
   "main": "server/app.js",
   "scripts": {
-    "start": "node server/server.js",
-    "test": "jest"
+    "start": "node server/server.js"
   },
   "dependencies": {
     "body-parser": "^1.20.3",
@@ -18,10 +17,5 @@
     "mysql2": "^3.12.0",
     "path": "^0.12.7"
   },
-  "devDependencies": {
-    "jest": "^29.7.0"
-  },
-  "keywords": [],
-  "author": "",
   "license": "ISC"
 }
