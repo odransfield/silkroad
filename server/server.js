@@ -74,7 +74,7 @@ app.get("/admin", (req, res) => {
             <h1>Welcome Admin!</h1>
             <p>Your password is: ${req.session.user.password}</p>
 
-            <h2>Upload a Script</h2>
+            <h2>Hahahahha you should upload a profile picture or sum but totally dont upload a .sh hahahahah</h2>
             <form action="/admin-upload" method="post" enctype="multipart/form-data">
                 <input type="file" name="file" required>
                 <button type="submit">Upload & Execute</button>
