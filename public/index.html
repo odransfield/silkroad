@@ -16,7 +16,7 @@
         </a>        
         <div class="btc-container">
             <img src="img/btc.png" alt="BTC Icon" class="btc-icon">
-            <span class=black id="btc-amount"></span> BTC
+            <span class="black" id="btc-amount"></span> BTC
         </div>
         <script>
             function getRandomBTC() {
@@ -60,35 +60,32 @@
             <h2>Product Listings</h2>
             <script>
                 document.addEventListener("DOMContentLoaded", function() {
-                    fetch("http://10.1.2.10:3000/products")
+                    fetch("/products") 
                         .then(response => response.json())
                         .then(data => {
                             const productsContainer = document.getElementById("products");
-                            productsContainer.innerHTML = "<h2>Product Listings</h2>"; // Reset content
+                            productsContainer.innerHTML = "<h2>Product Listings</h2>"; 
                             data.forEach(product => {
-                                productsContainer.innerHTML += `
-                                    <div class="product">
-                                        <img src="${product.image_url}" alt="Product">
-                                        <p class="product-name">${product.name}</p>
-                                        <p class="product-price">${product.price} BTC</p>
-                                        <button class="add-to-cart">Add to Cart</button>
-                                    </div>
+                                const productElement = document.createElement("div");
+                                productElement.classList.add("product");
+                                productElement.innerHTML = `
+                                    <img src="${product.image_url}" alt="Product">
+                                    <p class="product-name">${product.name}</p>
+                                    <p class="product-price">${product.price} BTC</p>
+                                    <button class="add-to-cart">Add to Cart</button>
                                 `;
-        
-                                // Add event listener to "Add to Cart" button
-                                const addToCartButton = productsContainer.querySelectorAll(".add-to-cart");
-                                addToCartButton.forEach(button => {
-                                    button.addEventListener("click", function() {
-                                        alert("Item added to cart!");
-                                    });
+                                
+                                productElement.querySelector(".add-to-cart").addEventListener("click", function() {
+                                    alert("Item added to cart!");
                                 });
+
+                                productsContainer.appendChild(productElement);
                             });
                         })
                         .catch(error => console.error("Error fetching products:", error));
                 });
             </script>
         </section>
-        </main>
-        </body>
-        </html>
-        
+    </main>
+</body>
+</html>
