@@ -30,24 +30,34 @@ app.use(session({
 // Multer configuration
 const upload = multer({ dest: "./server/uploads/" });
 
-const db = mysql.createConnection({
+// Create a connection pool for MySQL
+const pool = mysql.createPool({
     host: process.env.DB_HOST || "localhost", // Use "db" since it's the service name in docker-compose
     user: process.env.DB_USER || "sqluser",
     password: process.env.DB_PASSWORD || "Passw0rd123!",
-    database: process.env.DB_NAME || "db"
+    database: process.env.DB_NAME || "db",
+    connectionLimit: 10 // Limit the number of connections in the pool
 });
 
-db.connect(err => {
-    if (err) {
-        console.error("Database connection failed:", err);
-        return;
-    }
-    console.log("Connected to MySQL Database");
-});
+// Retry mechanism for MySQL connection
+function connectToDatabase() {
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error("Database connection failed:", err);
+            setTimeout(connectToDatabase, 5000); // Retry after 5 seconds
+        } else {
+            console.log("Connected to MySQL Database");
+            connection.release(); // Release the connection back to the pool
+        }
+    });
+}
+
+// Try connecting on initial start
+connectToDatabase();
 
 // Fetch products from database
 app.get("/products", (req, res) => {
-    db.query("SELECT * FROM products", (err, results) => {
+    pool.query("SELECT * FROM products", (err, results) => {
         if (err) {
             console.error("Database query error:", err);
             res.status(500).json({ error: "Database error" });
@@ -108,7 +118,7 @@ app.get("/search", (req, res) => {
     // Directly insert user input into the query without validation or sanitization (this is insecure)
     const sqlQuery = `SELECT * FROM products WHERE name LIKE '%${query}%'`;
 
-    db.query(sqlQuery, (err, results) => {
+    pool.query(sqlQuery, (err, results) => {
         if (err) {
             console.error("Database query error:", err);
             return res.status(500).send("Database error");
@@ -120,7 +130,6 @@ app.get("/search", (req, res) => {
         <html lang="en">
         <ultra-header>
     <header>
-        <!--DEV NOTES: aka.ms/confidential -->
         <a href="/">
             <img class="silky" src="img/Silk_road.png">
         </a>        
@@ -189,7 +198,6 @@ app.get("/search", (req, res) => {
     });
 });
 
-
 // Login Endpoint with SQL Injection Vulnerability
 app.post("/login", (req, res) => {
     const { username, password } = req.body;
@@ -199,7 +207,7 @@ app.post("/login", (req, res) => {
 
     console.log("Executing SQL Query:", query); // For debugging
 
-    db.query(query, (err, results) => {
+    pool.query(query, (err, results) => {
         if (err) {
             console.error("Database query error:", err);
             return res.status(500).send("Database error");
