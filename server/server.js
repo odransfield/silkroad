@@ -91,7 +91,7 @@ app.get("/admin", (req, res) => {
             </form>
         `);
     } else {
-        res.status(403).send("Forbidden: You must be logged in as admin to view this page.");
+        res.status(403).send("Forbidden: You must be logged in as admin to view this page. Please go log in as an Admin user and try again");
     }
 });
 
