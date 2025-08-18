@@ -1,0 +1,41 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: .docker/Dockerfile  # Correct Dockerfile location
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_USER=sqluser
+      - DB_PASSWORD=Ermfaohfioahfiohagonioojaheiofhiqefhiojaiof!
+      - DB_NAME=db
+    volumes:
+      - ../:/app  # Mount parent directory (icespice)
+      - /app/node_modules
+    networks:
+      - app-network
+
+  db:
+    image: mysql:8
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: Ermfaohfioahfiohagonioojaheiofhiqefhiojaiof!
+      MYSQL_DATABASE: db
+      MYSQL_USER: sqluser
+      MYSQL_PASSWORD: Ermfaohfioahfiohagonioojaheiofhiqefhiojaiof!
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ../init.sql:/docker-entrypoint-initdb.d/init.sql  # Correct path to init.sql
+      - ../my.cnf:/etc/my.cnf  # Correct path to my.cnf
+    networks:
+      - app-network
+
+volumes:
+  mysql_data:
+
+networks:
+  app-network:
+    driver: bridge

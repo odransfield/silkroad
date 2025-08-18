@@ -7,17 +7,17 @@ RUN apk add --no-cache bash
 # Set the working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json first (to leverage Docker's cache)
-COPY package*.json ./
+# Copy package.json and package-lock.json from the parent directory
+COPY ../package*.json ./
 
 # Install dependencies
 RUN npm install
 
-# Copy the rest of the application
-COPY . .
+# Copy the rest of the application from the parent directory
+COPY ../ ./
 
 # Expose the application's port
 EXPOSE 3000
 
-# Wait for 20 seconds and then start the application
+# Wait for 10 seconds and then start the application
 CMD ["sh", "-c", "sleep 10 && node server/server.js"]
