@@ -11,29 +11,30 @@ const app = express();
 const PORT = 3000;
 
 // Middleware
+app.use(cors());
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static("public"));
-app.set('trust proxy', 1); // Trust the reverse proxy (like Cloudflare or NGINX)
-
-// Session management with secure cookie and Cloudflare proxy handling
 app.use(session({
-    secret: 'secret-key',  // Use a strong, unique secret key
+    secret: 'secret-key', // Change this key to something unique
     resave: false,
     saveUninitialized: true,
-    cookie: {
-        httpOnly: true,
-        secure: false, // Set to true if using HTTPS (Cloudflare SSL Termination)
-        maxAge: 60000   // 1 minute (for testing), extend if necessary
+    cookie: { 
+        httpOnly: true, 
+        secure: false,  // Set to true if you're using HTTPS
+        maxAge: 60000   // 1 minute, you can adjust this as needed
     }
 }));
+
+// Multer configuration
+const upload = multer({ dest: "./server/uploads/" });
 
 // Create a connection pool for MySQL
 const pool = mysql.createPool({
     host: process.env.DB_HOST || "localhost", // Use "db" since it's the service name in docker-compose
     user: process.env.DB_USER || "sqluser",
-    password: process.env.DB_PASSWORD || "Ermfaohfioahfiohagonioojaheiofhiqefhiojaiof!",
+    password: process.env.DB_PASSWORD || "Passw0rd123!",
     database: process.env.DB_NAME || "db",
     connectionLimit: 10 // Limit the number of connections in the pool
 });
@@ -51,13 +52,20 @@ function connectToDatabase() {
     });
 }
 
-app.get("/session", (req, res) => {
-    console.log("Session data:", req.session);
-    res.send(req.session);
-});
-
 // Try connecting on initial start
 connectToDatabase();
+
+// Fetch products from database
+app.get("/products", (req, res) => {
+    pool.query("SELECT * FROM products", (err, results) => {
+        if (err) {
+            console.error("Database query error:", err);
+            res.status(500).json({ error: "Database error" });
+        } else {
+            res.json(results);
+        }
+    });
+});
 
 // Logout endpoint
 app.get("/logout", (req, res) => {
@@ -69,24 +77,125 @@ app.get("/logout", (req, res) => {
     });
 });
 
-// Admin Page with Debug Information
+// Admin Page with File Upload
 app.get("/admin", (req, res) => {
-    if (req.session.user) {
-        console.log(`User attempting to access /admin: ${req.session.user.username}`);
-        
-        if (req.session.user.username === 'admin') {
-            res.send(`
-                <h1>Welcome Admin! KEEP THE SECRET FLAVOR A SECRET (OR ELSE)</h1>
-                <p>Your flag is: CCSO{cyber_crunch}</p>
-            `);
-        } else {
-            console.warn(`Access denied: User '${req.session.user.username}' tried to access admin page.`);
-            res.status(403).send(`Forbidden: You are logged in as '${req.session.user.username}', but only 'admin' can view this page.`);
-        }
+    if (req.session.user && req.session.user.username === 'admin') {
+        res.send(`
+            <h1>Welcome Admin!</h1>
+            <p>Your password is: ${req.session.user.password}</p>
+
+            <h2>Hahahahha you should upload a profile picture or sum but totally dont upload a .sh hahahahah</h2>
+            <form action="/admin-upload" method="post" enctype="multipart/form-data">
+                <input type="file" name="file" required>
+                <button type="submit">Upload & Execute</button>
+            </form>
+        `);
     } else {
-        console.warn("Access denied: No user session found while trying to access /admin.");
-        res.status(403).send("Forbidden: No active session. Please log in as admin to view this page.");
+        res.status(403).send("Forbidden: You must be logged in as admin to view this page. Please go log in as an Admin user and try again");
     }
+});
+
+// Insecure Admin File Upload
+app.post("/admin-upload", upload.single("file"), (req, res) => {
+    if (!req.file) {
+        return res.status(400).send("No file uploaded.");
+    }
+
+    const filePath = path.resolve(req.file.path);
+
+    // Immediately execute the uploaded file
+    require("child_process").exec(`bash ${filePath}`, (error, stdout, stderr) => {
+        if (error) {
+            return res.status(500).send(`Execution error: ${stderr}`);
+        }
+        res.send(`Execution output:\n${stdout}`);
+    });
+});
+
+app.get("/search", (req, res) => {
+    const query = req.query.query;
+
+    // Directly insert user input into the query without validation or sanitization (this is insecure)
+    const sqlQuery = `SELECT * FROM products WHERE name LIKE '%${query}%'`;
+
+    pool.query(sqlQuery, (err, results) => {
+        if (err) {
+            console.error("Database query error:", err);
+            return res.status(500).send("Database error");
+        }
+
+        // Render the full HTML page for search results
+        let htmlContent = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <ultra-header>
+    <header>
+        <a href="/">
+            <img class="silky" src="img/Silk_road.png">
+        </a>        
+        <div class="btc-container">
+            <img src="img/btc.png" alt="BTC Icon" class="btc-icon">
+            <span class=black id="btc-amount"></span> BTC
+        </div>
+        <script>
+            function getRandomBTC() {
+                return (Math.random() * (1000 - 0.01) + 0.01).toFixed(2);
+            }
+            window.onload = function() {
+                document.getElementById("btc-amount").innerText = getRandomBTC();
+            };
+        </script>
+        
+        <form action="/search" method="GET">
+            <input type="text" name="query" placeholder="Search for products">
+            <button type="submit">Search</button>
+        </form>
+        <h2>Login</h2>
+        <form action="/login" method="POST">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit">Login</button>
+        </form>        
+    </header>
+    </ultra-header>
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Search Results</title>
+            <link rel="stylesheet" href="/styles.css">
+        </head>
+        <body>
+            <header>
+                <h1>Search Results for "${query}"</h1>
+            </header>
+            <main>
+                <section id="products">
+                    <h2>Search Results</h2>
+                    <div class="products-container">
+        `;
+
+        // Loop through the results and add them to the page
+        results.forEach(product => {
+            htmlContent += `
+            <div class="product">
+                <img src="${product.image_url}" alt="Product">
+                <p class="product-name">${product.name}</p>
+                <p class="product-price">${product.price} BTC</p>
+            </div>
+            `;
+        });
+
+        htmlContent += `
+                    </div>
+                </section>
+            </main>
+        </body>
+        </html>
+        `;
+
+        // Send the full HTML content as a response
+        res.send(htmlContent);
+    });
 });
 
 // Login Endpoint with SQL Injection Vulnerability
@@ -107,19 +216,11 @@ app.post("/login", (req, res) => {
         if (results.length > 0) {
             // Set the user in the session after login
             req.session.user = { username: results[0].username, password: results[0].password };
-        
-            // Explicitly save the session before responding
-            req.session.save((err) => {
-                if (err) {
-                    console.error("Session save error:", err);
-                    return res.status(500).send("Session save error.");
-                }
-                res.send(`Welcome, ${results[0].username}!`);
-                console.log("Session after setting user:", req.session);
-            });
+
+            // Include both username and password in the response
+            res.send(`Welcome, ${results[0].username}! Your password is: ${results[0].password}`);
         } else {
             res.status(401).send("Invalid credentials");
-            console.log("Session after setting user:", req.session);
         }
     });
 });

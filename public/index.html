@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Berkey Creamery Marketplace</title>
+    <title>Silk Road Marketplace</title>
     <link rel="icon" type="image/x-icon" href="img/favicon.ico">
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -12,11 +12,24 @@
     <header>
         <!--DEV NOTES: aka.ms/confidential -->
         <a href="/">
-            <img class="silky" src="img/logo.png">
+            <img class="silky" src="img/Silk_road.png">
         </a>        
-        <form>
-            <input placeholder="Search for product">
-            <button>Search</button>
+        <div class="btc-container">
+            <img src="img/btc.png" alt="BTC Icon" class="btc-icon">
+            <span class="black" id="btc-amount"></span> BTC
+        </div>
+        <script>
+            function getRandomBTC() {
+                return (Math.random() * (1000 - 0.01) + 0.01).toFixed(2);
+            }
+            window.onload = function() {
+                document.getElementById("btc-amount").innerText = getRandomBTC();
+            };
+        </script>
+        
+        <form action="/search" method="GET">
+            <input type="text" name="query" placeholder="Search for product">
+            <button type="submit">Search</button>
         </form>
         <h2>Login</h2>
         <form id="login" action="/login" method="POST">
@@ -31,55 +44,48 @@
             <h3>Main Pages</h3>
             <ul>
                 <li><a href="/">Marketplace</a></li>
-                <li><a href="/info.html">About The Creamery</a></li>
+                <li><a href="/founder.html">About The Founder</a></li>
                 <li><a href="/admin">Admin</a></li>
+                <li><a href="/archive.html">Archive</a></li>
             </ul>
             <h3>Categories</h3>
             <ul>
-                <li><a href="/">Ice Cream</a></li>
-                <li><a href="/">Cookies</a></li>
-                <li><a href="/">Swag</a></li>
-                <li><a href="/">Custom Orders</a></li>
+                <li><a href="/search?query=">Drugs</a></li>
+                <li><a href="/search?query=">Electronics</a></li>
+                <li><a href="/search?query=">Books</a></li>
+                <li><a href="/search?query=">Custom Orders</a></li>
             </ul>
         </aside>
         <section id="products">
             <h2>Product Listings</h2>
-            <div class="product">
-                <img src="img/1.png" alt="Product">
-                <p class="product-name">Alumni Swirl</p>
-                <p class="product-price">$10.00</p>
-                <button class="add-to-cart" onclick="addToCart()">Add to Cart</button>
-            </div>
-            <div class="product">
-                <img src="img/2.png" alt="Product">
-                <p class="product-name">Chocolate</p>
-                <p class="product-price">$10.00</p>
-                <button class="add-to-cart" onclick="addToCart()">Add to Cart</button>
-            </div>
-            <div class="product">
-                <img src="img/3.png" alt="Product">
-                <p class="product-name">Monkey Business</p>
-                <p class="product-price">$10.00</p>
-                <button class="add-to-cart" onclick="addToCart()">Add to Cart</button>
-            </div>
-            <div class="product">
-                <img src="img/4.png" alt="Product">
-                <p class="product-name">Butter Pecan</p>
-                <p class="product-price">$10.00</p>
-                <button class="add-to-cart" onclick="addToCart()">Add to Cart</button>
-            </div>
-            <div class="product">
-                <img src="img/5.png" alt="Product">
-                <p class="product-name">Cookies and Cream</p>
-                <p class="product-price">$10.00</p>
-                <button class="add-to-cart" onclick="addToCart()">Add to Cart</button>
-            </div>
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    fetch("/products") 
+                        .then(response => response.json())
+                        .then(data => {
+                            const productsContainer = document.getElementById("products");
+                            productsContainer.innerHTML = "<h2>Product Listings</h2>"; 
+                            data.forEach(product => {
+                                const productElement = document.createElement("div");
+                                productElement.classList.add("product");
+                                productElement.innerHTML = `
+                                    <img src="${product.image_url}" alt="Product">
+                                    <p class="product-name">${product.name}</p>
+                                    <p class="product-price">${product.price} BTC</p>
+                                    <button class="add-to-cart">Add to Cart</button>
+                                `;
+                                
+                                productElement.querySelector(".add-to-cart").addEventListener("click", function() {
+                                    alert("Item added to cart!");
+                                });
+
+                                productsContainer.appendChild(productElement);
+                            });
+                        })
+                        .catch(error => console.error("Error fetching products:", error));
+                });
+            </script>
         </section>
     </main>
 </body>
-<script>
-    function addToCart() {
-        alert('✅ Item added to the cart!');
-    }
-</script>
 </html>
